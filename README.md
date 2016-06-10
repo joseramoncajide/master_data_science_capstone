@@ -70,8 +70,13 @@ This is the core activity of the data science project. In order to get insight f
 
 **Hardware and Resources**
 
+ - MacBook Pro with a 2,2 GHz Intel Core i7 and 16 GB 1600 MHz DDR3 RAM
 
+> Was used to development phases with the following Operating Systems: 
+> Mac OS X El Capitan
+> Virtual Box: used to test several bigdata platforms as Horton Works or Cloudera Impala. The Python development phase was executed in a Docker image available at [hub.docker.com](https://hub.docker.com/r/jrcajide/spark/ "hub.docker.com") Docker with Apache Spark, Python, R and Jupyter Notebook installed.
 
+ - The cluster provided by Kschool
 
 ## How to re-run this analysis ##
 
