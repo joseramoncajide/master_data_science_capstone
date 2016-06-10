@@ -44,16 +44,29 @@ This was a reiterative process consisting in:
 This is the core activity of the data science project. In order to get insight from the data a Machine Learning algorithm was applied to the selected variables.
 
 > **FIles**:
-> [clustering.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
-> [clustering.py](www.es.es "sdsd"): the final application created to run the K-means machine learning algorithm over the full dataset.
+>> [clustering.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
+>> [clustering.py](www.es.es "sdsd"): the final application created to run the K-means machine learning algorithm over the full dataset.
 > > [data_merging.R](www.es.es "sdsd"): a R script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis phase.
 
 ### Data analysis
 
 ## About the technology ##
-**Programming Languages**
+**Programming languages and interpreters**
 
-**Libraries**
+ - Linux shell: Shell was used intensively to manage files, run scripts, run `ssh` os `scp` commands that send both to the developement plaftorm on **Docker** and the remote cluster. Also used to move files into **Apache Hadoop Distributed File System** (HDFS), a distributed Java-based file system for storing large volumes of data.
+ - **R** statistical language: Was used mainly for the EDA phase and the modelling phase over the sample data set.
+ - Spark Python API (**PySpark**) : Used to run the K-means algorithm and perform the clustering over the full data set using **Python** programming language 
+
+
+**Main libraries**
+
+ - subsample: a command-line interface for sampling lines from text files that was used to get a sample of the full dataset for testing. 
+ `> pip install subsample`
+ `> subsample -n 100000 datos.csv -r > sample.csv`
+ 
+ - R `data.table`:  a R package that provides an enhanced version of `data.frame` , especially useful for working with large data sets (*datos.csv size:  3.6 gigabytes*) 
+ - `Pandas`: A high-performance, easy-to-use data structures and data analysis tools for Python
+ - `spark.ml`: The Spark machine learning package provided the K-means algorithm that clusters the data points into a predefined number of clusters.
 
 **Hardware and Resources**
 
