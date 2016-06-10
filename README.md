@@ -24,7 +24,7 @@ Sample data
 **Outlier detection**
 No outliers were detected during the EDA phase where most relevant variables were the most important variables were visualized. We found some big amount operations but no to be classified as extreme values that could affect the result of the analysis. 
 
-### Feature Engineering
+### Feature engineering
 New variables where generated based on existing ones in order to derive relevant information for the analysis.
 This was a reiterative process consisting in:
 
@@ -37,14 +37,18 @@ This was a reiterative process consisting in:
 > **Files**:
 > [exploratory_data_analysis.Rmd](www.es.es "sdsd"): a R Markdown document
 > [data_preparation.R](www.es.es "sdsd"): a R script that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed.
-> [data_preparation.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains the data preparation process.
+> [data_preparation.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains the data preparation process using R 
 
 ### Modelling
 
 This is the core activity of the data science project. In order to get insight from the data a Machine Learning algorithm was applied to the selected variables.
 
 > **FIles**:
-> ddsdsdsd
+> [clustering.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
+> [clustering.py](www.es.es "sdsd"): the final application created to run the K-means machine learning algorithm over the full dataset.
+> > [data_merging.R](www.es.es "sdsd"): a R script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis phase.
+
+### Data analysis
 
 ## About the technology ##
 **Programming Languages**
