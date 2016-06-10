@@ -74,7 +74,13 @@ This is the core activity of the data science project. In order to get insight f
 
 > Was used to development phases with the following Operating Systems: 
 > Mac OS X El Capitan
-> Virtual Box: used to test several bigdata platforms as Horton Works or Cloudera Impala. The Python development phase was executed in a Docker image available at [hub.docker.com](https://hub.docker.com/r/jrcajide/spark/ "hub.docker.com") Docker with Apache Spark, Python, R and Jupyter Notebook installed.
+> Virtual Box: used to test several bigdata platforms as Horton Works or Cloudera Impala. 
+> Docker: The Python development phase was executed in a Docker image available at [hub.docker.com](https://hub.docker.com/r/jrcajide/spark/ "hub.docker.com") Docker with Apache Spark, Python, R (`conda install -c r r-essentials`) and Jupyter Notebook installed. 
+
+ - To get the image: `docker pull jrcajide/spark` 
+ - To  run it: `docker run -d -p 8888:8888 jupyter/all-spark-notebook`
+ - Login: Get the docker instance: `> docker ps` and ssh: `> docker exec -t -i [replace with the instance id] /bin/bash`
+
 
  - The cluster provided by Kschool
 
