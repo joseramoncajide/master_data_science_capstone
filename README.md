@@ -34,19 +34,21 @@ This was a reiterative process consisting in:
  4. Remove uninformative predictors from the dataset
  5. Data transformation: leaving variances unequal is equivalent to putting more weight on variables with smaller variance, so clusters will tend to be separated along variables with greater variance. To avoid this all variables were normalized around the mean.
 
-> **Files**:
-> [exploratory_data_analysis.Rmd](www.es.es "sdsd"): a R Markdown document
-> [data_preparation.R](www.es.es "sdsd"): a R script that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed.
-> [data_preparation.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains the data preparation process using R 
+**Files**:
+
+ 1. [exploratory_data_analysis.Rmd](www.es.es "sdsd"): a R Markdown document
+ 2. [data_preparation.R](www.es.es "sdsd"): a R script that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed
+ 3. [data_preparation.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains the data preparation process using R 
 
 ### Modelling
 
 This is the core activity of the data science project. In order to get insight from the data a Machine Learning algorithm was applied to the selected variables.
 
-> **FIles**:
->> [clustering.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
->> [clustering.py](www.es.es "sdsd"): the final application created to run the K-means machine learning algorithm over the full dataset.
-> > [data_merging.R](www.es.es "sdsd"): a R script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis phase.
+**Files**:
+
+ 2. [clustering.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
+ 2.  [clustering.py](www.es.es "sdsd"): the final application created to run the K-means machine learning algorithm over the full dataset.
+ 3. [data_merging.R](www.es.es "sdsd"): a R script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis phase.
 
 ### Data analysis
 
@@ -84,7 +86,70 @@ This is the core activity of the data science project. In order to get insight f
 
  - The cluster provided by Kschool
 
-## How to re-run this analysis ##
+## How to run this analysis
+
+**Compress the csv file (Recommended)**
+    
+    tar -zcvf data_scaled.tar.gz data_scaled.csv
+    ls
+    -rw-r--r--    1 JOSE  staff  223390136  7 jun 15:28
+    data_scaled.csv
+    -rw-r--r--    1 JOSE  staff   35391541  7 jun 15:31 data_scaled.tar.gz
+**Upload the compressed file to the remote server**
+
+    scp -P 22010 data_scaled.tar.gz kschool06@cms.hadoop.flossystems.net:data_science/
+        data_scaled.tar.gz                                                                    100%   34MB   3.8MB/s   00:09  
+**Upload the Python app to the remote server**
+
+    scp -P 22010 clustering.py kschool06@cms.hadoop.flossystems.net:data_science/
+    clustering.py                                                                         100% 2888     2.8KB/s   00:00   
+**Connect to the remote server**
+
+    ssh -p 22010 kschool06@cms.hadoop.flossystems.net
+
+**Once into the server, uncompress the data and move it into HDFS**
+
+    cd data_science/
+    tar -zxvf data_scaled.tar.gz 
+    ls -al
+    
+    -rw-r--r-- 1 kschool06 kschool06 223390136 Jun  7 15:28 data_scaled.csv
+    -rw-r--r-- 1 kschool06 kschool06  35391541 Jun  7 15:34 data_scaled.tar.gz
+    hdfs dfs -ls
+    drwxr-xr-x   - kschool06 supergroup          0 2016-06-07 14:41 .sparkStaging
+    drwxr-xr-x   - kschool06 supergroup          0 2016-03-18 17:51 data
+    hdfs dfs -mkdir clustering
+    hdfs dfs -ls
+    drwxr-xr-x   - kschool06 supergroup          0 2016-06-07 14:41 .sparkStaging
+    drwxr-xr-x   - kschool06 supergroup          0 2016-06-07 15:40 clustering
+    drwxr-xr-x   - kschool06 supergroup          0 2016-03-18 17:51 data
+    hdfs dfs -put data_scaled.csv clustering/
+    hdfs dfs -ls clustering
+    -rw-r--r--   3 kschool06 supergroup  223390136 2016-06-07 15:40 clustering/data_scaled.csv
+
+**Run the app**
+
+     PYSPARK_PYTHON=/opt/cloudera/parcels/Anaconda/bin/python spark-submit --conf "spark.kryoserializer.buffer.max=2047" clustering.py    
+
+**Get the result file**
+
+In the *client*:
+
+    scp -P 22010 kschool06@cms.hadoop.flossystems.net:data_science/results.csv results.csv
+
+If the Python app was configured to store the K-means clustering result into Hadoop, then enter this commands:
+In the *server*:
+
+    hdfs dfs -copyToLocal clustering/results results
+    hdfs dfs -rm -R -skipTrash clustering/results
+In the *client*:
+
+    scp -r -P 22010 kschool06@cms.hadoop.flossystems.net:~/data_science/results results
+
+  
+
+  
+
 
     
     
