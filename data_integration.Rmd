@@ -1,0 +1,202 @@
+---
+title: "Data integration"
+date: "12 de junio de 2016"
+output: github_document
+---
+
+The last process before analyze and visualize the results is to integrate all the data sets.
+
+In this phase we query, transform, group, summarize and merge information in several ways to create two datasets. The first one will hold client data and the second withdrawl data. 
+
+**Reading data**
+
+In the first step we read the original dataset and the results obtained from running the clustering algorithm 
+
+```{r setup, include=FALSE, echo=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(ggplot2)
+library(knitr)
+
+# Load the data
+DT <- readRDS("./data/DT.rds")
+
+# Load the file with the clustering results
+DT.r <- fread(file.path('data/results.csv'), encoding='Latin-1', na.strings=c("","NA"),stringsAsFactors = F, skip=0L)
+DT.r$PER_ID_PERSONA <- gsub("\\\"\\\"", "", DT.r$PER_ID_PERSONA)
+DT.r$V1 <- NULL
+```
+
+A quick plot to check how many users where assigned to each segment.
+
+```{r, echo=TRUE}
+# Number of clients by cluster
+barplot(table(DT.r$cluster), main="Number of customers by segment.",  col=terrain.colors(4))
+```
+
+```{r}
+# Load not scaled variables
+DT.c <- readRDS("./data/DTc.rds")
+
+# Add the cluster variable to scaled data frame
+DT.clients <- merge(
+  DT.c, 
+  DT.r[,c("PER_ID_PERSONA", "cluster"), with = FALSE], 
+  by=c('PER_ID_PERSONA')
+)
+
+# Calculate the median for each variable by cluster
+cluster_medians.df <- aggregate(DT.clients[, 2:7, with = FALSE], by = list(DT.clients$cluster), median)
+
+write.table(cluster_medians.df, file.path('data/cluster_medians.csv'), row.names = F, col.names = TRUE, sep=",")
+
+# Calculate the mean for each variable by cluster
+setDT(DT.clients)
+cluster_means.df <- DT.clients[, lapply(.SD, mean, na.rm=TRUE), by=list(DT.clients$cluster), .SDcols=c(2:7) ][order(DT.clients)]
+cluster_means.df
+write.table(cluster_means.df, file.path('data/cluster_means.csv'), row.names = F, col.names = TRUE, sep=",")
+
+p1 <- ggplot(DT.clients, aes(F1, ..density.., fill = as.factor(cluster), colour = as.factor(cluster))) +
+  geom_density(alpha = 0.1) +
+  xlim(0, 1000)  + 
+  ggtitle("Median withdrawal amount into the same network by segment ")
+
+```
+
+Mean and median values for each cluster:
+
+```{r, echo=FALSE}
+kable(cluster_medians.df, format = "markdown")
+kable(cluster_means.df, format = "markdown")
+```
+
+A sample visualization to check the differences among clusters:
+
+```{r, echo=FALSE, fig.height=4, fig.width=12}
+print(p1)
+```
+
+
+**New features**
+
+To gain more insights form data we created some new variables to apply a RFM analysis of the users and get better knowledge from them.
+
+```{r}
+# RFM
+
+# Create a new varible with the days from the previous transaction for each user
+DT[, DIAS_DESDE_ULT_OPER := as.numeric(difftime(time1 = max(FECHA), time2 = FECHA, units = "days"))]
+
+# Users withdraw funds every 42 days, and 50% of them made it between 21 and 63 days
+summary(DT$DIAS_DESDE_ULT_OPER)
+
+```
+
+
+```{r}
+
+# New variables with recency, frequency and monetary value for each user
+DT.rfm <- DT[, list( RECENCIA = min(DIAS_DESDE_ULT_OPER),
+                     FRECUENCIA = unique(.N),
+                     VALOR_MEDIO = median(IMPOPER, na.rm = T)
+)
+,by=.(PER_ID_PERSONA)]
+
+# Merge the new variables with our clients data frame
+DT.clients <- merge(
+  DT.clients, 
+  DT.rfm, 
+  by=c('PER_ID_PERSONA')
+)
+
+p3 <- ggplot(DT.clients[,mean(RECENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Recency')
+p4 <- ggplot(DT.clients[,mean(FRECUENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Frequency')
+p5 <- ggplot(DT.clients[,mean(VALOR_MEDIO, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Average withdrawal amount')
+
+```
+
+**Visualizing recency, frequency and average withdrawal amount**
+
+The next three plot let us easily inspect the different behaviour among user in each segment.
+
+```{r, echo=FALSE, fig.height=4, fig.width=12}
+print(p3)
+print(p4)
+print(p5)
+```
+
+**New features**
+
+```{r}
+
+# Calculating user age and account duration
+DT.clients <- merge(
+  DT.clients,
+  DT[!duplicated(DT$PER_ID_PERSONA), list(
+    PER_ANTIGUEDAD = round(julian(as.Date(Sys.Date()), as.Date(PER_FECHA_ALTA))/365.25, 0),
+    PER_EDAD = round(julian(as.Date(Sys.Date()), as.Date(PER_FECHA_NAC))/365.25,0) 
+  ), by = .(PER_ID_PERSONA)],
+  by=c('PER_ID_PERSONA')
+)
+
+p6 <- ggplot(DT.clients[,mean(PER_EDAD, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), y=V1, fill=as.factor(cluster))) + geom_bar(stat = "identity") + ggtitle("Average user age by segment")
+
+```
+
+```{r, echo=FALSE, fig.height=4, fig.width=12}
+print(p6)
+```
+
+```{r}
+# Adding user information
+DT.clients <- merge(
+  DT.clients, 
+  DT[!duplicated(DT$PER_ID_PERSONA),c("PER_ID_PERSONA", "PER_ID_SEXO", "PER_EST_CIVIL", "PER_COD_PAIS_NAC"), with = FALSE], 
+  by=c('PER_ID_PERSONA')
+)
+
+```
+
+
+```{r}
+# Derive new variables from the original ones for better undestanding of each cluster
+
+client_means.df <- as.data.frame(DT.clients[, lapply(.SD, mean, na.rm=TRUE), by=list(DT.clients$cluster), .SDcols=c(9:11,13) ][order(DT.clients)])
+
+head(DT.clients, 2)
+
+# Export the result for data visualization in Tableu
+write.table(client_means.df, file.path('data/tableau_rfm.csv'), row.names = F, col.names = TRUE, sep=",")
+
+# Export client data for visualization in Tableu
+write.table(DT.clients, file.path('data/tableau_clients.csv'), row.names = F, col.names = TRUE, sep=",")
+```
+
+**Mean recency, frequency, amount and user age by cluster**
+
+```{r, echo=FALSE}
+kable(client_means.df, format = "markdown")
+```
+
+
+## Withdrawal data
+
+```{r}
+# Add user cluster assignment to each operation
+DT.transactons <- merge(
+  DT, 
+  DT.r[,c("PER_ID_PERSONA", "cluster"), with = FALSE], 
+  by=c('PER_ID_PERSONA')
+)
+
+barplot(table(DT.transactons$cluster), main= "Number of withdrowals by segment ",  col=terrain.colors(4))
+
+head(DT.transactons, 2)
+
+# Export withdrawals data for visualization in Tableu
+# write.table(DT.transactons, file.path('data/tableau_operaciones.csv'), row.names = F, col.names = TRUE, sep=",")
+```
+
+
+
+
