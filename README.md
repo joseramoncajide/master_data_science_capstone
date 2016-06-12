@@ -88,6 +88,10 @@ This is the core activity of the data science project. In order to get insight f
 
 ## How to run this analysis
 
+**Reading, transforming and feature engineering**
+
+    Rscript data_preparation.R 
+
 **Compress the csv file (Recommended)**
     
     tar -zcvf data_scaled.tar.gz data_scaled.csv
