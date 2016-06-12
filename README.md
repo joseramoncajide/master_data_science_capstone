@@ -37,8 +37,8 @@ This was a reiterative process consisting in:
 **Files**:
 
  1. [exploratory_data_analysis.Rmd](www.es.es "sdsd"): a R Markdown document
- 2. [data_preparation.R](www.es.es "sdsd"): a R script that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed
- 3. [data_preparation.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains data cleaning and pre-processing process using R. 
+ 2. [data_pre-processing.R](www.es.es "sdsd"): a R script that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed
+ 3. [data_pre-processing.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains data cleaning and pre-processing process using R. 
 
 ### Modelling
 
@@ -90,7 +90,7 @@ This is the core activity of the data science project. In order to get insight f
 
 **Reading, transforming and feature engineering**
 
-    Rscript data_preparation.R 
+    Rscript data_pre-processing.R 
 
 **Compress the csv file (Recommended)**
     
@@ -135,7 +135,7 @@ This is the core activity of the data science project. In order to get insight f
 
      PYSPARK_PYTHON=/opt/cloudera/parcels/Anaconda/bin/python spark-submit --conf "spark.kryoserializer.buffer.max=2047" clustering.py    
 
-**Get the result file**
+**Getting the resulting data set**
 
 In the *client*:
 
