@@ -38,7 +38,7 @@ This was a reiterative process consisting in:
 
  1. [exploratory_data_analysis.Rmd](www.es.es "sdsd"): a R Markdown document
  2. [data_preparation.R](www.es.es "sdsd"): a R script that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed
- 3. [data_preparation.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains the data preparation process using R 
+ 3. [data_preparation.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains data cleaning and pre-processing process using R. 
 
 ### Modelling
 
@@ -48,7 +48,7 @@ This is the core activity of the data science project. In order to get insight f
 
  2. [clustering.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
  2.  [clustering.py](www.es.es "sdsd"): the final application created to run the K-means machine learning algorithm over the full dataset.
- 3. [data_merging.R](www.es.es "sdsd"): a R script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis phase.
+ 3. [data_integration.R](www.es.es "sdsd"): a R script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis and visualization phase.
 
 ### Data analysis
 
