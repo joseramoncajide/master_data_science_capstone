@@ -150,7 +150,9 @@ In the *server*:
 In the *client*:
 
     scp -r -P 22010 kschool06@cms.hadoop.flossystems.net:~/data_science/results results
+**Data integration**
 
+    Rscript data_integration.Rmd 
   
 
   

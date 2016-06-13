@@ -1,22 +1,25 @@
 ---
 title: "Data integration"
-date: "12 de junio de 2016"
+date: "13 June 2016"
 output: github_document
 ---
 
 The last process before analyze and visualize the results is to integrate all the data sets.
 
-In this phase we query, transform, group, summarize and merge information in several ways to create two datasets. The first one will hold client data and the second withdrawl data. 
+In this phase we query, transform, group, summarize and merge information in several ways to create two datasets. The first one will hold user data and the second withdrawl data. 
+
+R package `data.table` was used again for high resource consuming tasks over a big data set with more than 7MM observations.
 
 **Reading data**
 
 In the first step we read the original dataset and the results obtained from running the clustering algorithm 
 
 ```{r setup, include=FALSE, echo=TRUE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,fig.align='center')
 library(data.table)
 library(ggplot2)
 library(knitr)
+library(radarchart)
 
 # Load the data
 DT <- readRDS("./data/DT.rds")
@@ -29,8 +32,8 @@ DT.r$V1 <- NULL
 
 A quick plot to check how many users where assigned to each segment.
 
-```{r, echo=TRUE}
-# Number of clients by cluster
+```{r, echo=TRUE, fig.height=4, fig.width=8}
+# Number of users by cluster
 barplot(table(DT.r$cluster), main="Number of customers by segment.",  col=terrain.colors(4))
 ```
 
@@ -55,12 +58,6 @@ setDT(DT.clients)
 cluster_means.df <- DT.clients[, lapply(.SD, mean, na.rm=TRUE), by=list(DT.clients$cluster), .SDcols=c(2:7) ][order(DT.clients)]
 cluster_means.df
 write.table(cluster_means.df, file.path('data/cluster_means.csv'), row.names = F, col.names = TRUE, sep=",")
-
-p1 <- ggplot(DT.clients, aes(F1, ..density.., fill = as.factor(cluster), colour = as.factor(cluster))) +
-  geom_density(alpha = 0.1) +
-  xlim(0, 1000)  + 
-  ggtitle("Median withdrawal amount into the same network by segment ")
-
 ```
 
 Mean and median values for each cluster:
@@ -73,6 +70,11 @@ kable(cluster_means.df, format = "markdown")
 A sample visualization to check the differences among clusters:
 
 ```{r, echo=FALSE, fig.height=4, fig.width=12}
+p1 <- ggplot(DT.clients, aes(F1, ..density.., fill = as.factor(cluster), colour = as.factor(cluster))) +
+  geom_density(alpha = 0.1) +
+  xlim(0, 1000)  + 
+  ggtitle("Median withdrawal amount into the same network by segment ")
+
 print(p1)
 ```
 
@@ -81,28 +83,33 @@ print(p1)
 
 To gain more insights form data we created some new variables to apply a RFM analysis of the users and get better knowledge from them.
 
-```{r}
+```{r, fig.height=4, fig.width=12}
 # RFM
 
-# Create a new varible with the days from the previous transaction for each user
-DT[, DIAS_DESDE_ULT_OPER := as.numeric(difftime(time1 = max(FECHA), time2 = FECHA, units = "days"))]
+# Create a new varible with the days from the previous withdrawal for each user
+setorder(DT, FECHA)
+DT[, DIAS_DESDE_ULT_OPER := as.numeric(difftime(time1 = FECHA, time2 = min(FECHA), units = "days")),by=.(PER_ID_PERSONA)]
 
-# Users withdraw funds every 42 days, and 50% of them made it between 21 and 63 days
+# Users requests withdraw funds every 34 days, and 50% of them made it between 10 and 55 days
 summary(DT$DIAS_DESDE_ULT_OPER)
+
+# Frequency chart of days since last withdrawal
+barplot(table(DT[DIAS_DESDE_ULT_OPER > 0,]$DIAS_DESDE_ULT_OPER), main="# number of withdrawals by days from last withdrawal")
 
 ```
 
+**Visualizing recency, frequency and average withdrawal amount**
 
 ```{r}
 
 # New variables with recency, frequency and monetary value for each user
-DT.rfm <- DT[, list( RECENCIA = min(DIAS_DESDE_ULT_OPER),
+DT.rfm <- DT[, list( RECENCIA = mean(DIAS_DESDE_ULT_OPER, na.rm = T),
                      FRECUENCIA = unique(.N),
                      VALOR_MEDIO = median(IMPOPER, na.rm = T)
 )
 ,by=.(PER_ID_PERSONA)]
 
-# Merge the new variables with our clients data frame
+# Merge the new variables with our users data frame
 DT.clients <- merge(
   DT.clients, 
   DT.rfm, 
@@ -115,15 +122,16 @@ p5 <- ggplot(DT.clients[,mean(VALOR_MEDIO, na.rm = T),by=.(cluster)], aes(x= as.
 
 ```
 
-**Visualizing recency, frequency and average withdrawal amount**
+
 
 The next three plot let us easily inspect the different behaviour among user in each segment.
 
-```{r, echo=FALSE, fig.height=4, fig.width=12}
+```{r, echo=FALSE, fig.height=4, fig.width=8}
 print(p3)
 print(p4)
 print(p5)
 ```
+
 
 **New features**
 
@@ -143,7 +151,7 @@ p6 <- ggplot(DT.clients[,mean(PER_EDAD, na.rm = T),by=.(cluster)], aes(x= as.fac
 
 ```
 
-```{r, echo=FALSE, fig.height=4, fig.width=12}
+```{r, echo=FALSE, fig.height=4, fig.width=8}
 print(p6)
 ```
 
@@ -163,20 +171,28 @@ DT.clients <- merge(
 
 client_means.df <- as.data.frame(DT.clients[, lapply(.SD, mean, na.rm=TRUE), by=list(DT.clients$cluster), .SDcols=c(9:11,13) ][order(DT.clients)])
 
-head(DT.clients, 2)
-
 # Export the result for data visualization in Tableu
 write.table(client_means.df, file.path('data/tableau_rfm.csv'), row.names = F, col.names = TRUE, sep=",")
 
 # Export client data for visualization in Tableu
 write.table(DT.clients, file.path('data/tableau_clients.csv'), row.names = F, col.names = TRUE, sep=",")
+
 ```
 
 **Mean recency, frequency, amount and user age by cluster**
 
 ```{r, echo=FALSE}
-kable(client_means.df, format = "markdown")
+kable(round(client_means.df, 0), format = "markdown")
 ```
+
+**Users dataset**
+
+The final users dataset with relevant variables:
+
+```{r, echo=FALSE}
+kable(head(DT.clients, 4), format = "markdown")
+```
+
 
 
 ## Withdrawal data
@@ -189,14 +205,17 @@ DT.transactons <- merge(
   by=c('PER_ID_PERSONA')
 )
 
-barplot(table(DT.transactons$cluster), main= "Number of withdrowals by segment ",  col=terrain.colors(4))
-
-head(DT.transactons, 2)
+barplot(table(DT.transactons$cluster), main= "Number of successfull withdrowals requests by segment ",  col=terrain.colors(4))
 
 # Export withdrawals data for visualization in Tableu
-# write.table(DT.transactons, file.path('data/tableau_operaciones.csv'), row.names = F, col.names = TRUE, sep=",")
+write.table(DT.transactons, file.path('data/tableau_operaciones.csv'), row.names = F, col.names = TRUE, sep=",")
 ```
 
+The final withdrawal dataset:
+
+```{r, echo=FALSE}
+kable(head(DT.transactons, 2), format = "markdown")
+```
 
 
 
