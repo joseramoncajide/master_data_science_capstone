@@ -36,9 +36,9 @@ This was a reiterative process consisting in:
 
 **Files**:
 
- 1. [exploratory_data_analysis.Rmd](www.es.es "sdsd"): a R Markdown document
- 2. [data_pre-processing.R](www.es.es "sdsd"): a R script that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed
- 3. [data_pre-processing.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that explains data cleaning and pre-processing process using R. 
+ 1. [`exploratory_data_analysis.Rmd`](www.es.es "sdsd"): a R Markdown document
+ 2. [`data_pre-processing.R`](www.es.es "sdsd"): a R script that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed
+ 3. [`data_pre-processing.ipnyb`](www.es.es "sdsd"): a Jupyter Notebook that explains data cleaning and pre-processing process using R. 
 
 ### Modelling
 
@@ -46,9 +46,10 @@ This is the core activity of the data science project. In order to get insight f
 
 **Files**:
 
- 2. [clustering.ipnyb](www.es.es "sdsd"): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
- 2.  [clustering.py](www.es.es "sdsd"): the final application created to run the K-means machine learning algorithm over the full dataset.
- 3. [data_integration.R](www.es.es "sdsd"): a R script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis and visualization phase.
+ 2. [`clustering.ipnyb`](www.es.es "sdsd"): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
+ 2.  [`clustering.py`](www.es.es "sdsd"): the final application created to run the K-means machine learning algorithm over the full dataset.
+ 3. [`data_integration.Rmd`](www.es.es "sdsd"): a R markdown script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis and visualization phase.
+ 4. [`data_integration.md`](www.es.es "sdsd"): a R markdown report explaining how all the datasets were processed by `data_integration.Rmd`.
 
 ### Data analysis
 
@@ -135,7 +136,7 @@ This is the core activity of the data science project. In order to get insight f
 
      PYSPARK_PYTHON=/opt/cloudera/parcels/Anaconda/bin/python spark-submit --conf "spark.kryoserializer.buffer.max=2047" clustering.py    
 
-**Getting the resulting data set**
+**Get the result file**
 
 In the *client*:
 
