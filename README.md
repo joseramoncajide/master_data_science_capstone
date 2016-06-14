@@ -49,6 +49,8 @@ This is the core activity of the data science project. In order to get insight f
 
 *Click the image or refresh this page to watch the animation*
 
+![Final clusters](img/matplotlib_clustering.png)
+
 **Files**:
 
  2. [`clustering.ipynb`](clustering.ipynb): a Jupyter Notebook that perform data modeling phase over the sample dataset using Python and Spark
