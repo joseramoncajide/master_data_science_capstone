@@ -85,7 +85,8 @@ The last phase in this project was trying to  communicate information clearly an
 
 **Files**
 
- 1. [`data_science_project.twbx`](data_science_project.twbx): A Tableau Desktop communicating with interactive charts and dashboards communicating data analysis results.
+ 1. [`data_science_project.twbx`](data_science_project.twbx): A Tableau Desktop communicating with interactive charts and dashboards communicating data analysis results. (Not available for download)
+ 2. [data_science_project.pdf](data_science_project.pdf) A Tableau story in PDF format.
 
 ## About the technology ##
 #### Programming languages and interpreters
