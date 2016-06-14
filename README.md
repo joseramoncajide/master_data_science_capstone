@@ -183,14 +183,19 @@ In the *client*:
 
 **Marta Cámara Jiménez**
 Data Science & Negocio en EURO 6000
-https://www.linkedin.com/in/martacamarajimenez
-[@mcamarajimenez](https://twitter.com/mcamarajimenez)
+
+ - https://www.linkedin.com/in/martacamarajimenez
+ - [@mcamarajimenez](https://twitter.com/mcamarajimenez)
 
 **Jose Ramón Cajide**
 Digital Analyst at El Arte de Medir 
-https://www.linkedin.com/in/jrcajide
-[@jrcajide](https://twitter.com/jrcajide)
-  
+
+ - https://www.linkedin.com/in/jrcajide
+ - [@jrcajide](https://twitter.com/jrcajide)
+
+
+
+*“In God we Trust, all others bring data”*  (W. Edwards Deming)
 
 
     
