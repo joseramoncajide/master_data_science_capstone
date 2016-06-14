@@ -574,4 +574,4 @@ Next steps
 
 After this phase a R script ([data\_pre-processing.R](data_pre-processing.R)) was developed to automatically process the full data set, create the new features and save them into a CSV file. This file will be uploaded to a cluster in the cloud and stored on HDFS for later usage in Spark.
 
-The full data pre-processing phase is explained in this notebook: [data\_pre-processing.ipnyb](data_pre-processing.ipnyb).
+The full data pre-processing phase is explained in this notebook: [data\_pre-processing.ipynb](data_pre-processing.ipynb).
