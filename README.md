@@ -1,29 +1,41 @@
 XXX project for the Kschool Master in Data Science
 ===================
-> `#DataScience` `#RStats` `#Python` `#Spark` `#MachineLearning`
+`#DataScience` `#RStats` `#Python` `#MachineLearning` `#BigData` `#Spark` 
 
-Introduction
 
 ## Objetive ##
-The goal of the Capstone Project is to answer this business questions:
 
- - List item
- - Otro
+The main objective of this project is to understand if Royal Decree-Law 11/2015, of 2 October, which regulates cash withdrawals fees at ATMs has changed users habits and financial institutions should change their trading policies in order to keep an equilibrium between user satisfactions and revenue generation.
+
+The **scope of the project** is to provide knowledge about a big data set from a short period of time. By applying the same analysis over historical data before the regulation, may provide useful insights and provide answers to business problems. 
+
 ## About the methodology ##
 
 ### Data acquisition
 
-Sample data
+The data set was provided by EURO 6000 and consists in a `csv` file with 10.651.775 rows, 36 columns and 3.557 GB.
+
+Data was sampled into a representative subset of data points to work with a manageable amount of data in order to build and run analysis and data manipulation more quickly, while still producing accurate findings that finally were applied to the main data set.
+
 ####  Variable and data type identification
 #### Variable transformation
 
 ### Exploratory data analysis (EDA)
 
+The main tasks during this phase were transforming data, dealing with missing values, visualizing raw data by plotting frequency and distribution charts and finally testing and fitting a statistical model.
+
+#### Variable transformation
+Variables were converted into a their right object type and also changed from its measurement scale. 
+Working with categorical or factor variables in a big data set can be challenging. By transforming into the write object type we could minimize computational resources.
+
 #### Missing values and outliers
 **Missing values**
+Many of the categorical variables provided in the data set contained missing information. NA, a logical constant of length 1 which contains a missing value indicator was assigned to these observations so the could be coerced to any other type if needed.
 
 **Outlier detection**
 No outliers were detected during the EDA phase where most relevant variables were the most important variables were visualized. We found some big amount operations but no to be classified as extreme values that could affect the result of the analysis. 
+
+
 
 ### Feature engineering
 New variables where generated based on existing ones in order to derive relevant information for the analysis.
