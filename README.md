@@ -44,7 +44,9 @@ This was a reiterative process consisting in:
 
 This is the core activity of the data science project. In order to get insight from the data a Machine Learning algorithm was applied to the selected variables.
 
+**K-means Machine Learning Algorithm visually explained**
 ![K-means Machine Learning Algorithm](img/kmeans.gif)
+*Click the image or refresh this page to watch the animation*
 
 **Files**:
 
