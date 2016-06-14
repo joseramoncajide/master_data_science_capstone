@@ -36,9 +36,9 @@ This was a reiterative process consisting in:
 
 **Files**:
 
- 1. [`exploratory_data_analysis.Rmd`](www.es.es "sdsd"): a R Markdown **report** with the detailed EDA  process.
- 2. [`data_pre-processing.R`](www.es.es "sdsd"): a R **script** that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed
- 3. [`data_pre-processing.ipnyb`](www.es.es "sdsd"): a Jupyter Notebook that explains data cleaning and pre-processing process using R. 
+ 1. [`exploratory_data_analysis.Rmd`](exploratory_data_analysis.Rmd): a R Markdown **report** with the detailed EDA  process.
+ 2. [`data_pre-processing.R`](data_pre-processing.R): a R **script** that reads the data source file, performs data cleaning, wrangling and the feature engineering process. As a result a CSV file is created and ready to be analyzed
+ 3. [`data_pre-processing.ipnyb`](data_pre-processing.ipnyb): a Jupyter Notebook that explains data cleaning and pre-processing process using R. 
 
 ### Modelling
 
