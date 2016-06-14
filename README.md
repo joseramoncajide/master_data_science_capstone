@@ -1,5 +1,6 @@
 XXX project for the Kschool Master in Data Science
 ===================
+> `#DataScience` `#RStats` `#Python` `#Spark` `#MachineLearning`
 
 Introduction
 
