@@ -11,7 +11,7 @@ The **scope of the project** is to provide knowledge about a big data set from a
 
 ## About the methodology ##
 The CRISP-DM (*cross-industry process for data mining*) methodology provides a structured approach to planning a data mining task and was applied to this data science project.
-![CRISP-DM](img/crisp.gif = 250x250)
+![CRISP-DM](img/crisp.jpg)
 
 ### Data acquisition
 
