@@ -1,0 +1,404 @@
+---
+title: "Exploratory Data Analysis"
+output: github_document
+---
+
+In this first phase of the data science project we performed an exploratory data analysis to:
+
+* maximize insight into the data set
+* detect outliers and missing data
+* extract important variables
+* test underlying assumptions
+* develop a testing model and evualate all the requisites to run it.
+
+We applyed quite simple graphical techniques like:
+
+* plotting the raw data
+* plotting simple statistics
+
+We used R base plotting functionality because of it's convenience, but complimented with the use of `ggplot2` and `lattice` R packages.
+
+For data wrangling tasks we used the power of the `data.table` package.
+
+```{r, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align='center')
+
+list.of.packages <- c("data.table", "dplyr","ggplot2","lubridate","lattice","scales","corrplot","caret","cluster","useful","viridis","ggthemes","knitr")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+```
+
+```{r, include=FALSE}
+lapply(list.of.packages, library, character.only = T)
+rm(list = c('list.of.packages', 'new.packages'))
+```
+
+
+## Loading data
+
+```{r}
+file <- file.path('data/sample.csv')
+
+if (file.exists(file)) {
+  cat('Reading', file)
+  print(paste(round(file.info(file)$size  / 2^30, 4), 'gigabytes'))
+  readLines(file, n=2, skipNul = T)
+  DT <- fread(file, encoding='Latin-1', na.strings=c("","NA"))
+} else {
+  stop("File not found.")
+}
+```
+
+The dataset `r file` contains `r DT[,.N,]` withdrawal requests by `r DT[, .(users = length(unique(PER_ID_PERSONA))), by = PER_ID_PERSONA][,sum(users)]` users. User data is missing for `r nrow(DT[is.na(PER_ID_PERSONA)])` requests, that is, a `r (nrow(DT[is.na(PER_ID_PERSONA)]) / nrow(DT)) * 100`% of the data set.
+
+## Data Type Conversion
+
+**Dates:**
+
+```{r}
+sapply(DT,class)
+DT[,FECHA:=as.Date(paste(ANO, MES, DIA, sep="-" ), tz = "Europe/Madrid")]  
+DT[,PER_FECHA_NAC:=as.Date(PER_FECHA_NAC, format = "%Y%m%d", tz = "Europe/Madrid")] 
+DT[,PER_FECHA_ALTA:=as.Date(PER_FECHA_ALTA, format = "%Y%m%d", tz = "Europe/Madrid")]   
+```
+
+**Categorical variables:**
+
+```{r}
+variables <- c('ANO','MES','DIA','OP_ADQUIRENTE','DES_TIPO_EMISOR','DES_PROVINCIA', 'DES_TIPO_ADQUIRENTE', 'DES_AMBITO',   'OP_COD_PAIS_COMERCIO','DES_MARCA','DES_GAMA','DES_PRODUCTO', 'TIPO_TARJETA', 'DES_CREDEB','DES_CLASE_OPERACION',       'DES_PAGO','DES_RESULTADO','PER_TIPO_PERS','PER_COD_PAIS_NAC', 'OF_COD_PAIS_RES','PER_ID_SEXO','PER_EST_CIVIL','PER_MARCA_EMP','PER_MARCA_FALL')
+DT[,(variables):=lapply(.SD, as.factor),.SDcols=variables]
+rm(variables)
+```
+
+**Numerical variables:**
+
+```{r}
+variables <- c('NOPER','IMPOPER')
+DT[,(variables):=lapply(.SD, as.numeric),.SDcols=variables]
+rm(variables)
+```
+
+**Reordering columns**
+
+```{r}
+setcolorder(DT, c(ncol(DT), 1:(ncol(DT)-1)))
+```
+
+**Inspecting firs row of the data set:**
+```{r, echo=FALSE}
+knitr::kable(head(DT,1))
+```
+
+
+## Exploratory data analysis
+
+**Missing data**
+
+```{r}
+par(mai=c(1,1.6,1,0.5), family = "Helvetica", col=viridis(1), fg = "black")
+barplot(sapply(DT, function(x) sum(is.na(x))), main = "Missing Data", col=viridis(1), xlab = "Count", cex.names = .6, horiz=TRUE,las=1, border = "white")
+```
+
+
+
+### Trying to figure out what the data set "looks" like 
+
+**Bank companies**
+
+The dataset contains requests from users of `r length(unique(DT$OP_ADQUIRENTE))` diferent bank companies.
+
+We decided to change anonimyzed names by friendly ones:
+
+```{r}
+setkey(DT,OP_ADQUIRENTE)
+
+op_adquiriente <- seq(from = 1000, to=length(unique(DT$OP_ADQUIRENTE))+999, by =1)
+DT[,OP_ADQUIRENTE:=factor(OP_ADQUIRENTE,labels=op_adquiriente)]
+
+adquirente <- paste("Entidad", op_adquiriente)
+DT[,ADQUIERENTE:=factor(ADQUIERENTE,labels=adquirente)]
+
+knitr::kable(head(DT[,c('ADQUIERENTE','OP_ADQUIRENTE'), with = FALSE]))
+```
+
+**Monthly withdrawls**
+    
+```{r}
+barplot(table(DT$MES), main = "Monthly withdrawls", xlab = "Mes", col=viridis(3), border = "white")
+```
+
+**Daily withdrawls**
+    
+```{r}
+counts <- table(DT$MES, DT$DIA)
+barplot(counts, col=viridis(3),  main = "Daily withdrawls by month", xlab = "D?a", sub="February was in 2016 only 29 days long", legend = c("January","February","March"), border = "white")
+rm(counts)
+```
+    
+**Withdrawls by weekday**
+
+```{r}
+counts <- table(DT$MES, lubridate::wday(DT$FECHA, label = T))
+barplot(counts, col=viridis(3),  main = "Withdrawls by weekday", xlab = "D?a", sub="Num of withdrawls are bigger on weekends", legend = c("January","February","March"), border = "white")
+rm(counts)
+```
+
+**Withdrawl amount**
+```{r}
+hist(log(DT$IMPOPER), col=viridis(1), main = "Withdrawl amount", border = "white")
+```
+
+**Missing values**
+
+`r (nrow(DT[DES_PROVINCIA == "NO EXISTE LA PROVINCIA"]) / nrow(DT)) * 100` of observations do not have province:
+
+```{r}
+par(las=2)
+par(mar=c(5,12,4,2))
+barplot(table(DT$DES_PROVINCIA), horiz=TRUE, cex.names=0.6, col=viridis(1),  main = "Withdrawls by province", xlab = "D?a", sub="Many withdrawls without informed province", border = NA)
+
+# Assign NA to missing data
+levels(DT$DES_PROVINCIA)[levels(DT$DES_PROVINCIA)=='NO EXISTE LA PROVINCIA'] <- NA
+```
+
+**Withdrawls requests**
+```{r}
+barplot(table(DT$NOPER), col=viridis(10), border = NA, main="Frecuency of withdrawls requests")
+```
+
+**Withdrawls by user age**
+```{r}
+par(mar=c(5,5,5,5))
+counts <- table(year(Sys.Date())-year(DT$PER_FECHA_NAC))
+barplot(counts, col=viridis(1),  main = "Withdrawls by user age", xlab = "Age", sub="", border = NA )
+rm(counts)
+```
+
+**Withdrawls requests by age and weekday**
+```{r}
+histogram(~ year(Sys.Date())-year(DT$PER_FECHA_NAC) | wday(DT$FECHA, label = T), data=DT, xlab = "Age", main="Withdrawls requests by age and weekday", col=viridis(14), par.settings = list(strip.background=list(col="white")), border = "white" )
+```
+
+**Withdrawal amount requests by type**
+Amount variable has been transformed into *logarithm* to reduce the effect of outliers.
+```{r}
+ggplot(DT) + geom_density(aes(x=IMPOPER, fill = DES_CREDEB), alpha = 1) + scale_x_log10(breaks=c(10,100,200,2000), labels=comma) + annotation_logticks(sides="bt") + facet_wrap(~ DES_CREDEB)  + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Withdrawal (log) amount requests by type") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+```
+
+**Total withdrawls requests by user**
+```{r}
+counts <- table(DT[!is.na(PER_ID_PERSONA),sum(NOPER), by = .(PER_ID_PERSONA)]$V1)
+barplot(counts, col=viridis(1),  main = "Total withdrawls requests by user", xlab = "Withdrawls requests", ylab = "Users", sub="", border = "white")
+rm(counts)
+```
+
+**Mean withdrawls requests by user**
+```{r}
+counts <- table(DT[!is.na(PER_ID_PERSONA),mean(na.omit(.N)), by = .(PER_ID_PERSONA)]$V1)
+barplot(counts, col=viridis(4),  main = "Mean withdrawls requests by user", xlab = "Mean withdrawls requests", sub="", border = "white")
+rm(counts)
+```
+
+**Mean monthly withdrawls requests by user**
+```{r}
+counts <- table(DT[!is.na(PER_ID_PERSONA),mean(na.omit(.N)), by = .(PER_ID_PERSONA, MES)]$V1)
+barplot(counts, col=viridis(3),  main = "Mean monthly withdrawls requests by user", xlab = "Mean withdrawls requests", sub="", border = "white")
+rm(counts)
+```
+
+**Withdrawls requests by its scope**
+```{r}
+barplot(table(DT$DES_AMBITO), col=viridis(5), cex.names=0.6, main = "Withdrawls requests by scope", border = "white", horiz = F)
+``` 
+
+*On Us requests show withdrawls made by clients off a bank company in ATMs owned by the same company.
+*Inter-Sistema requests show operations between different bank companies but into the ¡ir own system (EURO 6000, Servired or 4B)
+*Intra-Sistema shows requests between different bank companies in different systems
+*Internacionales shows request between bank companies from different countries
+   
+**Monthly withdrawls requests by its scope**
+```{r}
+counts <- table(DT$MES, DT$DES_AMBITO)
+barplot(counts, col=viridis(3), cex.names=0.6, main = "Monthly withdrawls requests by its scope", xlab = "?mbitos", sub="", legend = c("Enero","Febrero","Marzo"), border = "white")
+rm(counts)
+```
+
+
+#### Payments types
+
+`r round((nrow(DT[DT$DES_PAGO == "Debito"]) / (nrow(DT) - nrow(DT[is.na(DT$DES_PAGO)]))  )* 100, 1)`% of requests are direct debit.  
+
+**Withdrawls requests by its payment type**
+```{r}
+counts <- table(DT$MES, DT$DES_PAGO)
+barplot(counts, col=viridis(3),  main = "Withdrawls requests by its payment type", xlab = "Payment types", sub="", legend = c("January","February","March"), border = "white")
+rm(counts)
+```
+
+**Mean withdrawl amount by payment type**
+```{r}
+DT[,mean(na.omit(IMPOPER)), by = .(DES_PAGO, MES)] %>% ggplot(aes(x = DES_PAGO, y = V1, fill= MES)) + geom_bar(stat="identity", position="dodge", colour="white") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Mean withdrawl amount by payment type") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+sum(na.omit(DT$IMPOPER))
+```
+
+**Total withdrawl amount by payment type**
+```{r}
+DT[,sum(na.omit(IMPOPER)), by = .(DES_PAGO, MES)] %>% ggplot(aes(x = DES_PAGO, y = V1, fill= MES)) + geom_bar(stat="identity", position="dodge", colour="white") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Total withdrawl amount by payment type") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+
+```
+
+There are `r nrow(DT[is.na(DT$IMPOPER)])` requests without amount data, a `r (nrow(DT[is.na(DT$IMPOPER)]) / nrow(DT)) * 100`% of the full data set.
+
+#### Spanish provinces 
+
+```{r}
+levels(DT$DES_PROVINCIA)[levels(DT$DES_PROVINCIA)=='NO EXISTE LA PROVINCIA'] <- NA
+```
+
+There are `r sum(is.na(DT$DES_PROVINCIA))` observations without informed province, a `r round(sum(is.na(DT$DES_PROVINCIA))/nrow(DT)*100, 1)`% of the data set.
+
+**Total withdrawls by province**
+```{r}
+DT[!is.na(DES_PROVINCIA), (.N), by = DES_PROVINCIA] %>% ggplot(aes(x = DES_PROVINCIA, y = V1, fill= V1)) + geom_bar(stat="identity", colour="white") + coord_flip() + scale_fill_viridis(discrete=F) + labs(x=NULL, y=NULL, title="Total withdrawls by payment province") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+```
+
+**Total withdrawls by province: EURO 6000**
+```{r}
+DT[!is.na(DES_PROVINCIA) & DES_TIPO_EMISOR == 'EURO 6000', .N, by = .(DES_PROVINCIA, DES_TIPO_EMISOR)] %>% ggplot(aes(x = DES_PROVINCIA, y = N, fill = N)) + geom_bar(stat="identity", colour="white") + coord_flip() + scale_fill_viridis(discrete=F) + labs(x=NULL, y=NULL, title="Total withdrawls by  province (Red EURO 6000)") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+```
+  
+
+**Total withdrawls by payment province: No EURO 6000**
+```{r}
+DT[!is.na(DES_PROVINCIA) & DES_TIPO_EMISOR != 'EURO 6000', .N, by = .(DES_PROVINCIA, DES_TIPO_EMISOR)] %>% ggplot(aes(x = DES_PROVINCIA, y = N, fill = DES_TIPO_EMISOR)) + geom_bar(stat="identity") + coord_flip() + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Total withdrawls by  province (Red EURO 6000)") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+```
+
+
+## Feature engineering
+
+Using domain knowledge of the provided data set, new variables where derived according to the main goal of this analysis.
+
+```{r}
+# Remove no sucessfull requests and request with no user information provided
+DT2 <- DT[!is.na(PER_ID_PERSONA) & DES_RESULTADO == "OK"]
+rm(DT)
+
+setkeyv(DT2,c("PER_ID_PERSONA","MES"))
+DT2 <- DT2[, list(F1=median(na.omit(IMPOPER[which(DES_AMBITO == "On us")])),
+                  F2=median(na.omit(IMPOPER[which(DES_AMBITO == "Inter-Sistemas")])),
+                  F3=median(na.omit(IMPOPER[which(DES_AMBITO == "Intra-Sistema")]), na.rm = T),
+                  F4=length(unique(.N[which(DES_AMBITO == "On us")])),
+                  F5=length(unique(.N[which(DES_AMBITO == "Inter-Sistemas")])),
+                  F6=length(unique(.N[which(DES_AMBITO == "Intra-Sistema")])),
+                  F7=length(.N[which(DES_CREDEB == "Débito")]),
+                  F8=length(.N[which(DES_CREDEB == "Crédito")]),
+                  F9=sum(IMPOPER[which(DES_CREDEB == "Débito")], na.rm = T) / length(unique(MES)), 
+                  F10=sum(IMPOPER[which(DES_CREDEB == "Crédito")], na.rm = T) / length(unique(MES))
+                  
+),
+by=.(PER_ID_PERSONA)]
+
+barplot(sapply(DT2[,c(2:11), with= FALSE], function(x) sum(is.na(x))), main = "Missing data by variable", col=viridis(10), xlab = "Count", cex.names = .6, horiz=F,las=1, border = "white")
+
+DT2[is.na(DT2)] <- 0
+
+knitr::kable(head(DT2, 2))
+```
+
+
+**Removing high correlated variables:**
+
+Highly correlated variables usually measure the same kind of information in different ways. Many algorithms may fail of give strange results if present.
+```{r}
+
+DT3 <- as.data.frame(DT2)
+row.names(DT3) <- DT3$PER_ID_PERSONA
+DT3$PER_ID_PERSONA <- NULL
+
+correlation.mat <-cor(DT3)
+knitr::kable(round(correlation.mat,2))
+corrplot(correlation.mat, method="color", col=viridis(10), main="Variable correlations")
+```
+
+**significance test**
+Computing the p-value of correlations:
+```{r}
+cor.mtest <- function(mat, ...) {
+  mat <- as.matrix(mat)
+  n <- ncol(mat)
+  p.mat<- matrix(NA, n, n)
+  diag(p.mat) <- 0
+  for (i in 1:(n - 1)) {
+    for (j in (i + 1):n) {
+      tmp <- cor.test(mat[, i], mat[, j], ...)
+      p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+    }
+  }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
+  p.mat
+}
+
+p.mat <- cor.mtest(correlation.mat)
+corrplot(correlation.mat, type="ful", order="hclust", p.mat = p.mat, sig.level = 0.01, method="color", main="Correlation & significance test", col=viridis(10))
+
+```
+
+Using the `caret` package to find correlated variables over a .9 threshold:
+```{r}
+highlyCor <- findCorrelation(cor(DT3), .90, verbose = T)
+```
+  
+High correlated variables where removed.
+```{r}
+DT3$F7 <- NULL
+DT3$F8 <- NULL
+DT3$F9 <- NULL
+DT3$F10 <- NULL
+```
+
+
+## Testing the model
+
+k-means clustering has been used as a feature learning step, in either (semi-)supervised learning or unsupervised learning.
+
+**Variable normalization**
+```{r, echo=FALSE}
+DT3.s <- scale(DT3)
+set.seed(123455)
+
+```
+
+**Trainning the model to find the optimal number of clusters**
+```{r}
+wssse <- (nrow(DT3.s)-1)*sum(apply(DT3.s,2,var))
+for(i in 2:15) wssse[i]<- sum(fit=kmeans(DT3.s,centers=i,15)$withinss)
+plot(1:15,wssse,type="b",main="Testing for 15 clusters",xlab="Number of clusters",ylab="Within Set Sum of Squared Error", col=viridis(10))
+```
+
+As we can see from the above output the slope of the graph changes majorly in 4th iteration, hence we consider the optimized number of cluster as 4 in which we can get the optimum result
+
+**Trainning the algorithm to find 4 clusters**
+```{r}
+fit <- kmeans(DT3.s, 4)
+
+plot(DT3.s,col=fit$cluster,pch=15, main="Clustering", xlab = "F1: Mean withdrowall amount request (On us)", ylab = "F2: Mean withdrowall amount request (Inter-Sistemas)")
+points(fit$centers,pch=4, cex = 1.9, col=viridis(4))
+
+```
+
+**Visualizing clustering results**
+```{r}
+clusplot(DT3.s, fit$cluster, color=TRUE, shade=TRUE, labels=0, lines=0, col.p=viridis(4), main="Clustering results")
+result.df <- data.frame(DT3[,c(1:6)],fit$cluster)
+```
+
+**Cheking cluster composition**
+```{r, echo=FALSE}
+knitr::kable(round(aggregate(result.df[,1:6],by = list(fit$cluster),FUN = mean), 2))
+```
+
+
+## Next steps
+
+After this phase a R script was developed to automatically process the full data set, create the new features and save them into a CSV file. This file will be uploaded to a cluster in the cloud and stored on HDFS.
