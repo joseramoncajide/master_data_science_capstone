@@ -21,6 +21,11 @@ The data set was provided by EURO 6000 and consists in a `csv` file with *10.651
 
 This file was sampled into a representative subset of data points to work with a manageable amount of data in order to build and run analysis and data manipulation more quickly, while still producing accurate findings that finally were applied to the main data set.
 
+**Files**:
+
+ 1. A codebook of the data set is available [here](codebook.pdf).
+ 2. Due to privacy concecerns the data sets are not available. A small sample of them are available in the [`data`](data) directory of this repository.
+
 ### Exploratory data analysis (EDA)
 
 The main tasks during this phase were transforming data, dealing with missing values, visualizing raw data by plotting frequency and distribution charts and finally testing and fitting a statistical model.
@@ -69,7 +74,7 @@ As a result, withdrawal requests were grouped in similar groups turning the anal
 
 **Files**:
 
- 2. [`clustering.ipynb`](clustering.ipynb): a Jupyter Notebook that performs the data modeling phase over the sample dataset using Python and Spark.
+ 1. [`clustering.ipynb`](clustering.ipynb): a Jupyter Notebook that performs the data modeling phase over the sample dataset using Python and Spark.
  2.  [`clustering.py`](clustering.py): the final application created to run the K-means machine learning algorithm over the full dataset.
  3. [`data_integration.Rmd`](data_integration.Rmd): a R markdown script that joins clustering results with the original dataset and derive new datasets needed to perform the data analysis and visualization phase.
  4. [`data_integration.md`](data_integration.md): a R markdown **report** explaining how all the datasets were processed by `data_integration.Rmd`.
@@ -77,6 +82,10 @@ As a result, withdrawal requests were grouped in similar groups turning the anal
 ### Data analysis and visualization
 
 The last phase in this project was trying to  communicate information clearly and efficiently through plotting the findings. 
+
+**Files**
+
+ 1. [`data_science_project.twbx`](data_science_project.twbx): A Tableau Desktop communicating with interactive charts and dashboards communicating data analysis results.
 
 ## About the technology ##
 #### Programming languages and interpreters
