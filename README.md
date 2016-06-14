@@ -1,4 +1,5 @@
-XXX project for the Kschool Master in Data Science
+
+A Data Science project in Banking Domain
 ===================
 `#DataScience` `#RStats` `#Python` `#MachineLearning` `#BigData` `#Spark` 
 
