@@ -7,18 +7,17 @@ XXX project for the Kschool Master in Data Science
 
 The main objective of this project is to understand if Royal Decree-Law 11/2015, of 2 October, which regulates cash withdrawals fees at ATMs has changed users habits and financial institutions should change their trading policies in order to keep an equilibrium between user satisfactions and revenue generation.
 
-The **scope of the project** is to provide knowledge about a big data set from a short period of time. By applying the same analysis over historical data before the regulation, may provide useful insights and provide answers to business problems. 
+The **scope of the project** is to provide knowledge about a big data set from a short period of time. By applying the same analysis over historical data before the regulation, may provide useful insights to solve business issues. 
 
 ## About the methodology ##
+The CRISP-DM (*cross-industry process for data mining*) methodology provides a structured approach to planning a data mining task and was applied to this data science project.
+![CRISP-DM](img/crisp.gif)
 
 ### Data acquisition
 
-The data set was provided by EURO 6000 and consists in a `csv` file with 10.651.775 rows, 36 columns and 3.557 GB.
+The data set was provided by EURO 6000 and consists in a `csv` file with *10.651.775 rows*, *36 columns* and *3.557 GB*.
 
 Data was sampled into a representative subset of data points to work with a manageable amount of data in order to build and run analysis and data manipulation more quickly, while still producing accurate findings that finally were applied to the main data set.
-
-####  Variable and data type identification
-#### Variable transformation
 
 ### Exploratory data analysis (EDA)
 
