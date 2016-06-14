@@ -14,13 +14,22 @@ R package `data.table` was used again for high resource consuming tasks over a b
 
 In the first step we read the original dataset and the results obtained from running the clustering algorithm 
 
-```{r setup, include=FALSE, echo=TRUE}
-knitr::opts_chunk$set(echo = TRUE,fig.align='center')
-library(data.table)
-library(ggplot2)
-library(knitr)
-library(radarchart)
 
+```{r, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align='center')
+
+list.of.packages <- c("data.table", "ggplot2","ggplot2","knitr","viridis","ggthemes","knitr")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+```
+
+```{r, include=FALSE}
+lapply(list.of.packages, library, character.only = T)
+rm(list = c('list.of.packages', 'new.packages'))
+```
+
+
+```{r setup, include=FALSE, echo=TRUE}
 # Load the data
 DT <- readRDS("./data/DT.rds")
 
@@ -32,9 +41,9 @@ DT.r$V1 <- NULL
 
 A quick plot to check how many users where assigned to each segment.
 
-```{r, echo=TRUE, fig.height=4, fig.width=8}
+```{r, echo=TRUE, fig.height=4, fig.width=10}
 # Number of users by cluster
-barplot(table(DT.r$cluster), main="Number of customers by segment.",  col=terrain.colors(4))
+barplot(table(DT.r$cluster), main="Number of customers by segment.", col=viridis(3), border = "white")
 ```
 
 ```{r}
@@ -56,7 +65,6 @@ write.table(cluster_medians.df, file.path('data/cluster_medians.csv'), row.names
 # Calculate the mean for each variable by cluster
 setDT(DT.clients)
 cluster_means.df <- DT.clients[, lapply(.SD, mean, na.rm=TRUE), by=list(DT.clients$cluster), .SDcols=c(2:7) ][order(DT.clients)]
-cluster_means.df
 write.table(cluster_means.df, file.path('data/cluster_means.csv'), row.names = F, col.names = TRUE, sep=",")
 ```
 
@@ -72,8 +80,7 @@ A sample visualization to check the differences among clusters:
 ```{r, echo=FALSE, fig.height=4, fig.width=12}
 p1 <- ggplot(DT.clients, aes(F1, ..density.., fill = as.factor(cluster), colour = as.factor(cluster))) +
   geom_density(alpha = 0.1) +
-  xlim(0, 1000)  + 
-  ggtitle("Median withdrawal amount into the same network by segment ")
+  xlim(0, 1000)  + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Median withdrawal amount into the same network by segment") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
 
 print(p1)
 ```
@@ -94,7 +101,7 @@ DT[, DIAS_DESDE_ULT_OPER := as.numeric(difftime(time1 = FECHA, time2 = min(FECHA
 summary(DT$DIAS_DESDE_ULT_OPER)
 
 # Frequency chart of days since last withdrawal
-barplot(table(DT[DIAS_DESDE_ULT_OPER > 0,]$DIAS_DESDE_ULT_OPER), main="# number of withdrawals by days from last withdrawal")
+barplot(table(DT[DIAS_DESDE_ULT_OPER > 0,]$DIAS_DESDE_ULT_OPER), main="# number of withdrawals by days from last withdrawal" , col=viridis(1), border = "white")
 
 ```
 
@@ -116,12 +123,13 @@ DT.clients <- merge(
   by=c('PER_ID_PERSONA')
 )
 
-p3 <- ggplot(DT.clients[,mean(RECENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Recency')
-p4 <- ggplot(DT.clients[,mean(FRECUENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Frequency')
-p5 <- ggplot(DT.clients[,mean(VALOR_MEDIO, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Average withdrawal amount')
+p3 <- ggplot(DT.clients[,mean(RECENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Recency") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+
+p4 <- ggplot(DT.clients[,mean(FRECUENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Frequency") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+
+p5 <- ggplot(DT.clients[,mean(VALOR_MEDIO, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Average withdrawal amount") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
 
 ```
-
 
 
 The next three plot let us easily inspect the different behaviour among user in each segment.
@@ -147,7 +155,7 @@ DT.clients <- merge(
   by=c('PER_ID_PERSONA')
 )
 
-p6 <- ggplot(DT.clients[,mean(PER_EDAD, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), y=V1, fill=as.factor(cluster))) + geom_bar(stat = "identity") + ggtitle("Average user age by segment")
+p6 <- ggplot(DT.clients[,mean(PER_EDAD, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), y=V1, fill=as.factor(cluster))) + geom_bar(stat = "identity") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Average user age by segment") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
 
 ```
 
@@ -205,7 +213,7 @@ DT.transactons <- merge(
   by=c('PER_ID_PERSONA')
 )
 
-barplot(table(DT.transactons$cluster), main= "Number of successfull withdrowals requests by segment ",  col=terrain.colors(4))
+barplot(table(DT.transactons$cluster), main= "Number of successfull withdrowals requests by segment ",col=viridis(4), border = "white")
 
 # Export withdrawals data for visualization in Tableu
 write.table(DT.transactons, file.path('data/tableau_operaciones.csv'), row.names = F, col.names = TRUE, sep=",")

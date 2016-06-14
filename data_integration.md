@@ -12,14 +12,22 @@ R package `data.table` was used again for high resource consuming tasks over a b
 
 In the first step we read the original dataset and the results obtained from running the clustering algorithm
 
+``` r
+knitr::opts_chunk$set(echo = TRUE,fig.align='center')
+
+list.of.packages <- c("data.table", "ggplot2","ggplot2","knitr","viridis","ggthemes","knitr")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+```
+
 A quick plot to check how many users where assigned to each segment.
 
 ``` r
 # Number of users by cluster
-barplot(table(DT.r$cluster), main="Number of customers by segment.",  col=terrain.colors(4))
+barplot(table(DT.r$cluster), main="Number of customers by segment.", col=viridis(3), border = "white")
 ```
 
-<img src="data_integration_files/figure-markdown_github/unnamed-chunk-1-1.png" style="display: block; margin: auto;" />
+<img src="data_integration_files/figure-markdown_github/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # Load not scaled variables
@@ -40,21 +48,6 @@ write.table(cluster_medians.df, file.path('data/cluster_medians.csv'), row.names
 # Calculate the mean for each variable by cluster
 setDT(DT.clients)
 cluster_means.df <- DT.clients[, lapply(.SD, mean, na.rm=TRUE), by=list(DT.clients$cluster), .SDcols=c(2:7) ][order(DT.clients)]
-cluster_means.df
-```
-
-    ##    DT.clients        F1         F2         F3        F4         F5
-    ## 1:          0  87.42946   1.688919   2.525916 1.7822123 0.04703892
-    ## 2:          1  26.86719 116.261664  32.485884 0.2112874 1.53087035
-    ## 3:          2  28.92897   9.828363 149.377057 0.2467102 0.23185504
-    ## 4:          3 467.07228   1.556532   4.388723 1.7393149 0.02274477
-    ##            F6
-    ## 1: 0.05316255
-    ## 2: 0.30213733
-    ## 3: 1.49150796
-    ## 4: 0.03555588
-
-``` r
 write.table(cluster_means.df, file.path('data/cluster_means.csv'), row.names = F, col.names = TRUE, sep=",")
 ```
 
@@ -132,7 +125,7 @@ A sample visualization to check the differences among clusters:
 
     ## Warning: Removed 1198 rows containing non-finite values (stat_density).
 
-<img src="data_integration_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
+<img src="data_integration_files/figure-markdown_github/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
 
 **New features**
 
@@ -154,10 +147,10 @@ summary(DT$DIAS_DESDE_ULT_OPER)
 
 ``` r
 # Frequency chart of days since last withdrawal
-barplot(table(DT[DIAS_DESDE_ULT_OPER > 0,]$DIAS_DESDE_ULT_OPER), main="# number of withdrawals by days from last withdrawal")
+barplot(table(DT[DIAS_DESDE_ULT_OPER > 0,]$DIAS_DESDE_ULT_OPER), main="# number of withdrawals by days from last withdrawal" , col=viridis(1), border = "white")
 ```
 
-<img src="data_integration_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
+<img src="data_integration_files/figure-markdown_github/unnamed-chunk-7-1.png" style="display: block; margin: auto;" />
 
 **Visualizing recency, frequency and average withdrawal amount**
 
@@ -176,14 +169,16 @@ DT.clients <- merge(
   by=c('PER_ID_PERSONA')
 )
 
-p3 <- ggplot(DT.clients[,mean(RECENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Recency')
-p4 <- ggplot(DT.clients[,mean(FRECUENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Frequency')
-p5 <- ggplot(DT.clients[,mean(VALOR_MEDIO, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + ggtitle('Average withdrawal amount')
+p3 <- ggplot(DT.clients[,mean(RECENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Recency") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+
+p4 <- ggplot(DT.clients[,mean(FRECUENCIA, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Frequency") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+
+p5 <- ggplot(DT.clients[,mean(VALOR_MEDIO, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), fill=as.factor(cluster))) + geom_bar() + stat_summary_bin(aes(y = V1), fun.y = "mean", geom = "bar") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Average withdrawal amount") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
 ```
 
 The next three plot let us easily inspect the different behaviour among user in each segment.
 
-<img src="data_integration_files/figure-markdown_github/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /><img src="data_integration_files/figure-markdown_github/unnamed-chunk-7-2.png" style="display: block; margin: auto;" /><img src="data_integration_files/figure-markdown_github/unnamed-chunk-7-3.png" style="display: block; margin: auto;" />
+<img src="data_integration_files/figure-markdown_github/unnamed-chunk-9-1.png" style="display: block; margin: auto;" /><img src="data_integration_files/figure-markdown_github/unnamed-chunk-9-2.png" style="display: block; margin: auto;" /><img src="data_integration_files/figure-markdown_github/unnamed-chunk-9-3.png" style="display: block; margin: auto;" />
 
 **New features**
 
@@ -198,10 +193,10 @@ DT.clients <- merge(
   by=c('PER_ID_PERSONA')
 )
 
-p6 <- ggplot(DT.clients[,mean(PER_EDAD, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), y=V1, fill=as.factor(cluster))) + geom_bar(stat = "identity") + ggtitle("Average user age by segment")
+p6 <- ggplot(DT.clients[,mean(PER_EDAD, na.rm = T),by=.(cluster)], aes(x= as.factor(cluster), y=V1, fill=as.factor(cluster))) + geom_bar(stat = "identity") + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Average user age by segment") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
 ```
 
-<img src="data_integration_files/figure-markdown_github/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
+<img src="data_integration_files/figure-markdown_github/unnamed-chunk-11-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # Adding user information
@@ -363,10 +358,10 @@ DT.transactons <- merge(
   by=c('PER_ID_PERSONA')
 )
 
-barplot(table(DT.transactons$cluster), main= "Number of successfull withdrowals requests by segment ",  col=terrain.colors(4))
+barplot(table(DT.transactons$cluster), main= "Number of successfull withdrowals requests by segment ",col=viridis(4), border = "white")
 ```
 
-<img src="data_integration_files/figure-markdown_github/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
+<img src="data_integration_files/figure-markdown_github/unnamed-chunk-16-1.png" style="display: block; margin: auto;" />
 
 ``` r
 # Export withdrawals data for visualization in Tableu
