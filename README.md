@@ -1,7 +1,7 @@
 
 A Data Science project in Banking Domain
 ===================
-`#DataScience` `#RStats` `#Python` `#MachineLearning` `#BigData` `#Spark` 
+`#DataScience` `#RStats` `#Python` `#MachineLearning` `#BigData` `#Spark` `#Banking` `#Finance`
 
 
 ## Objetive ##
