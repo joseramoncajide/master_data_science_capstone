@@ -18,6 +18,8 @@ We used R base plotting functionality because of it's convenience, but complimen
 
 For data wrangling tasks we used the power of the `data.table` package.
 
+> The EDA analysis was based on a subsample of 100000 observations from the original data set. The data was partitioned running `subsample -n 100000 datos.csv -r > sample.csv` on the operating system shell.
+
 ``` r
 knitr::opts_chunk$set(echo = TRUE,fig.align='center')
 
@@ -113,8 +115,7 @@ rm(variables)
 setcolorder(DT, c(ncol(DT), 1:(ncol(DT)-1)))
 ```
 
-Inspecting firs row of the data set:
-------------------------------------
+**Inspecting firs row of the data set:**
 
 | FECHA      | ANO  | MES | DIA | OP\_ADQUIRENTE       | ADQUIERENTE          | DES\_TIPO\_ADQUIRENTE | OP\_EMISOR           | EMISOR               | DES\_TIPO\_EMISOR | DES\_AMBITO | OP\_IDENT\_TERMINAL  | OP\_COD\_POST\_COMERCIO | DES\_PROVINCIA         | LOCALIDAD | OP\_COD\_PAIS\_COMERCIO | DES\_MARCA | DES\_GAMA | DES\_PRODUCTO       | TIPO\_TARJETA | DES\_CREDEB | DES\_CLASE\_OPERACION | DES\_PAGO | DES\_RESULTADO | PER\_ID\_PERSONA     | PER\_TIPO\_PERS | PER\_FECHA\_ALTA | OF\_COD\_POST | PER\_COD\_PAIS\_NAC | OF\_COD\_PAIS\_RES | PER\_ID\_SEXO | PER\_EST\_CIVIL | PER\_MARCA\_EMP | PER\_MARCA\_FALL | PER\_FECHA\_NAC |  NOPER|  IMPOPER|
 |:-----------|:-----|:----|:----|:---------------------|:---------------------|:----------------------|:---------------------|:---------------------|:------------------|:------------|:---------------------|:------------------------|:-----------------------|:----------|:------------------------|:-----------|:----------|:--------------------|:--------------|:------------|:----------------------|:----------|:---------------|:---------------------|:----------------|:-----------------|:--------------|:--------------------|:-------------------|:--------------|:----------------|:----------------|:-----------------|:----------------|------:|--------:|
@@ -138,7 +139,7 @@ barplot(sapply(DT, function(x) sum(is.na(x))), main = "Missing Data", col=viridi
 
 The dataset contains requests from users of 70 diferent bank companies.
 
-We decided to change anonimyzed names by friendly ones:
+We decided to change anonymized names by friendly ones:
 
 ``` r
 setkey(DT,OP_ADQUIRENTE)
@@ -173,7 +174,7 @@ barplot(table(DT$MES), main = "Monthly withdrawls", xlab = "Mes", col=viridis(3)
 
 ``` r
 counts <- table(DT$MES, DT$DIA)
-barplot(counts, col=viridis(3),  main = "Daily withdrawls by month", xlab = "D?a", sub="February was in 2016 only 29 days long", legend = c("January","February","March"), border = "white")
+barplot(counts, col=viridis(3),  main = "Daily withdrawls by month", xlab = "Month", sub="February was in 2016 only 29 days long", legend = c("January","February","March"), border = "white")
 ```
 
 <img src="exploratory_data_analysis_files/figure-markdown_github/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
@@ -182,11 +183,11 @@ barplot(counts, col=viridis(3),  main = "Daily withdrawls by month", xlab = "D?a
 rm(counts)
 ```
 
-\*\* Withdrawls by weekday\*\*
+**Withdrawls by weekday**
 
 ``` r
 counts <- table(DT$MES, lubridate::wday(DT$FECHA, label = T))
-barplot(counts, col=viridis(3),  main = "Withdrawls by weekday", xlab = "D?a", sub="Num of withdrawls are bigger on weekends", legend = c("January","February","March"), border = "white")
+barplot(counts, col=viridis(3),  main = "Withdrawls by weekday", xlab = "Weekday", sub="Num of withdrawls are bigger on weekends", legend = c("January","February","March"), border = "white")
 ```
 
 <img src="exploratory_data_analysis_files/figure-markdown_github/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
@@ -313,7 +314,7 @@ barplot(table(DT$DES_AMBITO), col=viridis(5), cex.names=0.6, main = "Withdrawls 
 
 ``` r
 counts <- table(DT$MES, DT$DES_AMBITO)
-barplot(counts, col=viridis(3), cex.names=0.6, main = "Monthly withdrawls requests by its scope", xlab = "?mbitos", sub="", legend = c("Enero","Febrero","Marzo"), border = "white")
+barplot(counts, col=viridis(3), cex.names=0.6, main = "Monthly withdrawls requests by its scope", xlab = "Scope", sub="", legend = c("January","February","March"), border = "white")
 ```
 
 <img src="exploratory_data_analysis_files/figure-markdown_github/unnamed-chunk-24-1.png" style="display: block; margin: auto;" />
@@ -374,7 +375,7 @@ There are 27133 observations without informed province, a 54.3% of the data set.
 **Total withdrawls by province**
 
 ``` r
-DT[!is.na(DES_PROVINCIA), (.N), by = DES_PROVINCIA] %>% ggplot(aes(x = DES_PROVINCIA, y = V1, fill= V1)) + geom_bar(stat="identity", colour="white") + coord_flip() + scale_fill_viridis(discrete=F) + labs(x=NULL, y=NULL, title="Total withdrawls by payment province") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+DT[!is.na(DES_PROVINCIA), (.N), by = DES_PROVINCIA] %>% ggplot(aes(x = DES_PROVINCIA, y = V1, fill= V1)) + geom_bar(stat="identity", colour="white") + coord_flip() + scale_fill_viridis(discrete=F) + labs(x=NULL, y=NULL, title="Total withdrawls by province") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
 ```
 
 <img src="exploratory_data_analysis_files/figure-markdown_github/unnamed-chunk-29-1.png" style="display: block; margin: auto;" />
@@ -390,7 +391,7 @@ DT[!is.na(DES_PROVINCIA) & DES_TIPO_EMISOR == 'EURO 6000', .N, by = .(DES_PROVIN
 **Total withdrawls by payment province: No EURO 6000**
 
 ``` r
-DT[!is.na(DES_PROVINCIA) & DES_TIPO_EMISOR != 'EURO 6000', .N, by = .(DES_PROVINCIA, DES_TIPO_EMISOR)] %>% ggplot(aes(x = DES_PROVINCIA, y = N, fill = DES_TIPO_EMISOR)) + geom_bar(stat="identity") + coord_flip() + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Total withdrawls by  province (Red EURO 6000)") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
+DT[!is.na(DES_PROVINCIA) & DES_TIPO_EMISOR != 'EURO 6000', .N, by = .(DES_PROVINCIA, DES_TIPO_EMISOR)] %>% ggplot(aes(x = DES_PROVINCIA, y = N, fill = DES_TIPO_EMISOR)) + geom_bar(stat="identity") + coord_flip() + scale_fill_viridis(discrete=T) + labs(x=NULL, y=NULL, title="Total withdrawls by  province (No EURO 6000)") + theme_tufte(base_family="Helvetica") + theme(axis.ticks=element_blank()) + theme(axis.text=element_text(size=10)) + theme(legend.title=element_text(size=8)) + theme(legend.text=element_text(size=6)) + theme(plot.title=element_text(hjust=0))
 ```
 
 <img src="exploratory_data_analysis_files/figure-markdown_github/unnamed-chunk-31-1.png" style="display: block; margin: auto;" />
@@ -509,7 +510,13 @@ DT3$F7 <- NULL
 DT3$F8 <- NULL
 DT3$F9 <- NULL
 DT3$F10 <- NULL
+knitr::kable(head(DT3, 2))
 ```
+
+|                      |   F1|   F2|   F3|   F4|   F5|   F6|
+|----------------------|----:|----:|----:|----:|----:|----:|
+| 002JN2ZPCA9DPVUE1Q7P |   70|    0|    0|    1|    0|    0|
+| 0034SFJMXSQT5WX8QXY1 |  450|    0|    0|    1|    0|    0|
 
 Testing the model
 -----------------
@@ -565,4 +572,6 @@ result.df <- data.frame(DT3[,c(1:6)],fit$cluster)
 Next steps
 ----------
 
-After this phase a R script was developed to automatically process the full data set, create the new features and save them into a CSV file. This file will be uploaded to a cluster in the cloud and stored on HDFS.
+After this phase a R script ([data\_pre-processing.R](data_pre-processing.R)) was developed to automatically process the full data set, create the new features and save them into a CSV file. This file will be uploaded to a cluster in the cloud and stored on HDFS for later usage in Spark.
+
+The full data pre-processing phase is explained in this notebook: [data\_pre-processing.ipnyb](data_pre-processing.ipnyb).
