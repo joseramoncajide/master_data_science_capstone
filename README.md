@@ -154,15 +154,19 @@ The last phase in this project was trying to  communicate information clearly an
     
     -rw-r--r-- 1 kschool06 kschool06 223390136 Jun  7 15:28 data_scaled.csv
     -rw-r--r-- 1 kschool06 kschool06  35391541 Jun  7 15:34 data_scaled.tar.gz
+    
     hdfs dfs -ls
     drwxr-xr-x   - kschool06 supergroup          0 2016-06-07 14:41 .sparkStaging
     drwxr-xr-x   - kschool06 supergroup          0 2016-03-18 17:51 data
+    
     hdfs dfs -mkdir clustering
+    
     hdfs dfs -ls
     drwxr-xr-x   - kschool06 supergroup          0 2016-06-07 14:41 .sparkStaging
     drwxr-xr-x   - kschool06 supergroup          0 2016-06-07 15:40 clustering
     drwxr-xr-x   - kschool06 supergroup          0 2016-03-18 17:51 data
-    hdfs dfs -put data_scaled.csv clustering/
+	hdfs dfs -put data_scaled.csv clustering/
+    
     hdfs dfs -ls clustering
     -rw-r--r--   3 kschool06 supergroup  223390136 2016-06-07 15:40 clustering/data_scaled.csv
 
