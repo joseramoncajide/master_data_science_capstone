@@ -103,9 +103,10 @@ The last phase in this project was trying to  communicate information clearly an
  `> subsample -n 100000 datos.csv -r > sample.csv`
  
  - R `data.table`:  a R package that provides an enhanced version of `data.frame` , especially useful for working with large data sets (*datos.csv size:  3.6 gigabytes*) 
+ 
  - `Pandas`: A high-performance, easy-to-use data structures and data analysis tools for Python
  
- - `spark.ml`: The Spark machine learning package provided the K-means algorithm that clusters the data points into a predefined number of clusters.
+ - `spark.ml`: The Spark machine learning package provided the K-means algorithm that groups the data points into a predefined number of clusters.
 
 #### Hardware and Resources
 
@@ -151,7 +152,6 @@ The last phase in this project was trying to  communicate information clearly an
     cd data_science/
     tar -zxvf data_scaled.tar.gz 
     ls -al
-    
     -rw-r--r-- 1 kschool06 kschool06 223390136 Jun  7 15:28 data_scaled.csv
     -rw-r--r-- 1 kschool06 kschool06  35391541 Jun  7 15:34 data_scaled.tar.gz
     
@@ -165,6 +165,7 @@ The last phase in this project was trying to  communicate information clearly an
     drwxr-xr-x   - kschool06 supergroup          0 2016-06-07 14:41 .sparkStaging
     drwxr-xr-x   - kschool06 supergroup          0 2016-06-07 15:40 clustering
     drwxr-xr-x   - kschool06 supergroup          0 2016-03-18 17:51 data
+	
 	hdfs dfs -put data_scaled.csv clustering/
     
     hdfs dfs -ls clustering
@@ -180,7 +181,9 @@ In the *client*:
 
     scp -P 22010 kschool06@cms.hadoop.flossystems.net:data_science/results.csv results.csv
 
-If the Python app was configured to store the K-means clustering result into Hadoop, then enter this commands:
+> If the Python app was configured to store the K-means clustering
+> result into *HDFS*, then enter this commands:
+
 In the *server*:
 
     hdfs dfs -copyToLocal clustering/results results
@@ -210,8 +213,3 @@ Digital Analyst at El Arte de Medir
 
 
 *“In God we Trust, all others bring data”*  (W. Edwards Deming)
-
-
-    
-    
-    
