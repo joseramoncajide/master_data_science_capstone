@@ -182,7 +182,7 @@ In the *client*:
     scp -P 22010 kschool06@cms.hadoop.flossystems.net:data_science/results.csv results.csv
 
 > If the Python app was configured to store the K-means clustering
-> result into *HDFS*, then enter this commands:
+> result into *HDFS*, then enter these commands:
 
 In the *server*:
 
